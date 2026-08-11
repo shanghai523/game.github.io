@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天意难违 - 大周皇子重生记</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --panel: #16213e;
+            --gold: #d4a574;
+            --text: #e0d5c1;
+            --text-light: #c4b998;
+            --border: #3a2a1a;
+            --btn-bg: #2a1a0a;
+            --btn-hover: #4a2a0a;
+            --btn-text: #d4a574;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(ellipse at center, rgba(212,167,116,0.05) 0%, transparent 70%);
+            font-family: 'STSong','SimSun','Noto Serif SC',serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 850px;
+            min-height: 92vh;
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(212,167,116,0.1), inset 0 0 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(180deg, #1a0a00 0%, #2a1500 100%);
+            border-bottom: 2px solid var(--gold);
+            padding: 16px 24px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(212,167,116,0.5);
+            margin:0;
+            font-weight: normal;
+        }
+        .header .subtitle {
+            font-size: 0.8em;
+            color: var(--text-light);
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 1px solid rgba(212,167,116,0.2);
+            font-size: 0.85em;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .info-label { color: var(--gold); font-size: 0.8em; letter-spacing: 1px; }
+        .info-value { color: #fff; font-weight: bold; }
+        .scene-indicator {
+            padding: 6px 16px;
+            background: rgba(0,0,0,0.3);
+            font-size: 0.8em;
+            color: var(--text-light);
+            border-bottom: 1px solid rgba(212,167,116,0.15);
+        }
+        .scene-indicator span { color: var(--gold); }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 55vh;
+        }
+        .content-area::-webkit-scrollbar { width:5px; }
+        .content-area::-webkit-scrollbar-thumb { background: rgba(212,167,116,0.3); border-radius:3px; }
+        .narration-block {
+            background: rgba(0,0,0,0.4);
+            border-left: 3px solid var(--gold);
+            padding: 14px 18px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.8;
+            font-size: 0.95em;
+            animation: fadeIn 0.6s ease;
+        }
+        .narration-block .time-location {
+            font-size: 0.8em;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+        .message.narrator {
+            justify-content: center;
+            margin: 8px 0;
+        }
+        .message.narrator .bubble {
+            background: rgba(0,0,0,0.5);
+            border: 1px dashed rgba(212,167,116,0.3);
+            text-align: center;
+            font-style: italic;
+            color: var(--text-light);
+            max-width: 85%;
+            font-size: 0.9em;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            border: 2px solid rgba(212,167,116,0.4);
+        }
+        .avatar.player { background:#1a3a5c; border-color:#4a8ab5; }
+        .avatar.ally { background:#1a3a2a; border-color:#4a8a6a; }
+        .avatar.enemy { background:#3a1a1a; border-color:#8a4a4a; }
+        .avatar.neutral { background:#2a2a1a; border-color:#8a8a4a; }
+        .bubble {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 10px 14px;
+            max-width: 75%;
+            line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .bubble .speaker {
+            font-size: 0.75em;
+            color: var(--gold);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .bubble p { margin:0; color: var(--text); }
+        .choices-area {
+            padding: 16px 24px;
+            border-top: 2px solid rgba(212,167,116,0.3);
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .choices-area .prompt {
+            font-size: 0.85em;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--btn-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--btn-text);
+            font-size: 0.95em;
+            cursor: pointer;
+            text-align: left;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        .choice-btn:hover {
+            background: var(--btn-hover);
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(212,167,116,0.2);
+            transform: translateX(4px);
+            color: #fff;
+        }
+        .choice-btn .choice-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(212,167,116,0.3);
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .choice-btn .choice-hint {
+            display: block;
+            font-size: 0.7em;
+            color: var(--text-light);
+            margin-top: 4px;
+            margin-left: 34px;
+        }
+        .control-bar {
+            display: flex;
+            gap: 8px;
+            padding: 10px 24px;
+            border-top: 1px solid rgba(212,167,116,0.15);
+            background: rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .ctrl-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid rgba(212,167,116,0.3);
+            border-radius: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.8em;
+            letter-spacing: 1px;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+        .ctrl-btn:hover {
+            background: rgba(212,167,116,0.1);
+            border-color: var(--gold);
+            color: #fff;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 1px solid var(--gold);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: var(--gold);
+            z-index: 100;
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 2s forwards;
+        }
+        @keyframes toastIn { from{opacity:0;top:-20px;} to{opacity:1;top:20px;} }
+        @keyframes toastOut { from{opacity:1;} to{opacity:0;} }
+        @media (max-width:600px) {
+            .header h1 { font-size:1.3em; }
+            .content-area { padding:12px; max-height:45vh; }
+            .bubble { max-width:85%; font-size:0.9em; }
+            .avatar { width:32px; height:32px; font-size:1.2em; }
+            .choice-btn { padding:10px 14px; font-size:0.85em; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="header">
+        <h1>天 意 难 违</h1>
+        <div class="subtitle">· 大周皇子重生记 ·</div>
+    </div>
+    <div class="info-bar" id="infoBar">
+        <div class="info-item"><span class="info-label">🏷️ 身份</span><span class="info-value" id="infoIdentity">三皇子</span></div>
+        <div class="info-item"><span class="info-label">📅 时间</span><span class="info-value" id="infoTime">大庆二十三年</span></div>
+        <div class="info-item"><span class="info-label">📍 地点</span><span class="info-value" id="infoLocation">大明宫</span></div>
+        <div class="info-item"><span class="info-label">⚔️ 势力</span><span class="info-value" id="infoPower">蛰伏中</span></div>
+    </div>
+    <div class="scene-indicator">
+        📖 当前章节：<span id="sceneTitle">序章·重生</span>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+    <div class="choices-area" id="choicesArea">
+        <div class="prompt">⚡ 请做出你的选择 ⚡</div>
+        <div id="choicesContainer"></div>
+    </div>
+    <div class="control-bar">
+        <button class="ctrl-btn" onclick="restartGame()">🔄 重新开始</button>
+        <button class="ctrl-btn" onclick="saveGame()">💾 保存进度</button>
+    </div>
+</div>
+<div id="toastContainer"></div>
+
+<script>
+// ==================== 游戏状态 ====================
+class GameState {
+    constructor() { this.reset(); }
+    reset() {
+        this.currentChapter = 'prologue';
+        this.currentStep = 'start';
+        this.identity = '三皇子·李辰安';
+        this.gameTime = '大庆二十三年·春';
+        this.location = '大明宫·紫宸殿偏殿';
+        this.power = '蛰伏中';
+        this.flags = {};
+        this.history = [];
+        this.attributes = { '仁德':5, '权谋':5, '隐忍':5, '锋芒':0 };
+    }
+    setFlag(f,v=true) { this.flags[f]=v; }
+    getFlag(f) { return this.flags[f]||false; }
+    addAttr(a,d) { this.attributes[a]=(this.attributes[a]||0)+d; }
+}
+
+// ==================== 主游戏类 ====================
+class Game {
+    constructor() {
+        this.state = new GameState();
+        this.isPlaying = false;
+        this.init();
+    }
+
+    init() {
+        this.updateUI();
+        this.startChapter('prologue','start');
+        this.isPlaying = true;
+    }
+
+    updateUI() {
+        document.getElementById('infoIdentity').textContent = this.state.identity;
+        document.getElementById('infoTime').textContent = this.state.gameTime;
+        document.getElementById('infoLocation').textContent = this.state.location;
+        document.getElementById('infoPower').textContent = this.state.power;
+        document.getElementById('sceneTitle').textContent = this.getChapterTitle();
+    }
+
+    getChapterTitle() {
+        const t = {
+            'prologue':'序章·重生',
+            'chapter1':'第一章·天机阁之择',
+            'chapter2_r1':'仁者之路',
+            'chapter2_r2':'权谋之路',
+            'chapter2_r3':'赤诚之路'
+        };
+        return t[this.state.currentChapter] || '结局';
+    }
+
+    startChapter(chapter, step) {
+        this.state.currentChapter = chapter;
+        this.state.currentStep = step;
+        this.clearContent();
+        this.updateUI();
+        const data = STORY_DATA[chapter]?.[step];
+        if(!data) { this.showError('剧情缺失'); return; }
+        if(data.time) this.state.gameTime = data.time;
+        if(data.location) this.state.location = data.location;
+        this.updateUI();
+        this.renderStep(data);
+    }
+
+    clearContent() {
+        document.getElementById('contentArea').innerHTML = '';
+        document.getElementById('choicesContainer').innerHTML = '';
+    }
+
+    renderStep(data) {
+        const area = document.getElementById('contentArea');
+        const choices = document.getElementById('choicesContainer');
+
+        if(data.narration) {
+            const div = document.createElement('div');
+            div.className = 'narration-block';
+            let html = '';
+            if(data.time||data.location) {
+                html += `<div class="time-location">📅 ${data.time||this.state.gameTime} | 📍 ${data.location||this.state.location}</div>`;
+            }
+            html += `<p>${data.narration}</p>`;
+            div.innerHTML = html;
+            area.appendChild(div);
+        }
+
+        if(data.dialogs) {
+            data.dialogs.forEach((d,i) => {
+                setTimeout(() => {
+                    if(!this.isPlaying) return;
+                    const msg = document.createElement('div');
+                    msg.className = 'message';
+                    let type = 'neutral';
+                    if(d.speaker==='李辰安'||d.speaker==='我') type='player';
+                    else if(d.speaker==='苏晚晴') type='ally';
+                    else if(d.speaker==='李承恪'||d.speaker==='李承昭') type='enemy';
+                    else if(d.speaker==='旁白'||d.speaker==='系统') type='narrator';
+
+                    if(type==='narrator') {
+                        msg.classList.add('narrator');
+                        msg.innerHTML = `<div class="bubble"><p>${d.text}</p></div>`;
+                    } else {
+                        const avatars = {'李辰安':'👤','我':'👤','苏晚晴':'👧','李承恪':'👨','李承昭':'👦','李宏':'👑','谢道玄':'🧓','李宏远':'👴','沈鹤龄':'📜','皇后':'👸','孙嬷嬷':'👵'};
+                        msg.innerHTML = `<div class="avatar ${type}">${avatars[d.speaker]||'👤'}</div><div class="bubble"><div class="speaker">${d.speaker}</div><p>${d.text}</p></div>`;
+                    }
+                    area.appendChild(msg);
+                    area.scrollTop = area.scrollHeight;
+                }, i*500);
+            });
+        }
+
+        const delay = (data.dialogs?.length||0)*500 + 300;
+        setTimeout(() => {
+            if(!this.isPlaying) return;
+            if(data.choices?.length) {
+                data.choices.forEach((c,i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.innerHTML = `<span class="choice-number">${i+1}</span>${c.text}${c.hint?`<span class="choice-hint">${c.hint}</span>`:''}`;
+                    btn.onclick = () => this.makeChoice(c);
+                    choices.appendChild(btn);
+                });
+            } else if(data.nextChapter && data.nextStep) {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = '<span class="choice-number">▶</span>继续...';
+                btn.onclick = () => this.startChapter(data.nextChapter, data.nextStep);
+                choices.appendChild(btn);
+            }
+        }, delay);
+    }
+
+    makeChoice(choice) {
+        if(!this.isPlaying) return;
+        this.state.history.push({chapter:this.state.currentChapter, step:this.state.currentStep, text:choice.text});
+        if(choice.effects) choice.effects.forEach(e => {
+            if(e.type==='flag') this.state.setFlag(e.key,e.value);
+            if(e.type==='attribute') this.state.addAttr(e.key,e.value);
+        });
+        if(choice.feedback) this.showToast(choice.feedback);
+        if(choice.nextChapter && choice.nextStep) {
+            setTimeout(() => this.startChapter(choice.nextChapter, choice.nextStep), choice.feedback?600:200);
+        }
+    }
+
+    showToast(msg) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    showError(msg) {
+        document.getElementById('contentArea').innerHTML = `<div class="narration-block" style="border-left-color:#c0392b;"><p style="color:#e74c3c;">⚠️ ${msg}</p></div>`;
+    }
+
+    restartGame() {
+        this.isPlaying = false;
+        this.state.reset();
+        this.clearContent();
+        this.updateUI();
+        this.isPlaying = true;
+        this.startChapter('prologue','start');
+        this.showToast('🔄 命运之轮重新转动...');
+    }
+
+    saveGame() {
+        try {
+            localStorage.setItem('tianyi_save', JSON.stringify({state:this.state, time:new Date().toISOString()}));
+            this.showToast('💾 进度已保存');
+        } catch(e) { this.showToast('⚠️ 保存失败'); }
+    }
+}
+
+// ==================== 故事数据（完整版） ====================
+const STORY_DATA = {
+    // 序章
+    'prologue': {
+        'start': {
+            time:'大庆二十三年·春',
+            location:'大明宫·紫宸殿偏殿',
+            narration:'你猛地睁开眼睛。映入眼帘的，是绣着金线蟠龙的帷帐。窗外春光正好，廊下的鹦鹉正学着人语："殿下千岁，殿下千岁……"\n\n你怔怔地望着自己那双白嫩短小的手——这是五岁孩童的手。前世的一切如潮水般涌来。你想起倒在血泊中的自己，想起七弟举起的刀，想起大哥那句轻飘飘的"干净些"。\n\n现在，一切重来。',
+            dialogs:[
+                {speaker:'孙嬷嬷', text:'殿下？殿下可是做噩梦了？'},
+                {speaker:'苏晚晴', text:'辰安哥哥，你醒了！我听说你落水了，吓死我了！以后不许再去太液池边玩了，听见没有？'},
+                {speaker:'旁白', text:'你想起来了。前世这个年纪，你确实在太液池边落过一次水。当时以为是意外。如今细想——那日推你入水的，是一个面生的小太监。原来，杀机从你五岁时便已开始。'},
+            ],
+            nextChapter:'prologue', nextStep:'meet_emperor'
+        },
+        'meet_emperor': {
+            time:'大庆二十三年·春',
+            location:'大明宫·御书房',
+            narration:'你在床上将养了三日。大哥李承恪，皇后嫡出，朝中支持者众多。七弟李承昭，母妃萧氏乃骠骑大将军萧远之妹，性情暴戾。\n\n这两个人，前世联手杀了你。\n\n你决定求见父皇。',
+            dialogs:[
+                {speaker:'李辰安', text:'父皇，儿臣斗胆，想请父皇准许儿臣入天机阁修习。'},
+                {speaker:'李宏', text:'是谁教你来说这些话的？'},
+                {speaker:'李辰安', text:'无人教儿臣。儿臣只是梦见……梦见儿臣长大了，却护不住父皇给儿臣的东西。儿臣害怕那个梦是真的。'},
+                {speaker:'李宏', text:'你过来。朕像你这么大的时候，你皇祖父也常说我心思重。明日让天机阁的谢道玄来看看你。'},
+            ],
+            nextChapter:'prologue', nextStep:'meet_brothers'
+        },
+        'meet_brothers': {
+            time:'大庆二十三年·春',
+            location:'大明宫·太液池边',
+            narration:'从御书房出来，绕过太液池时，你迎面遇上了大哥李承恪和七弟李承昭。',
+            dialogs:[
+                {speaker:'李承恪', text:'三弟！身子可大好了？大哥这两日忙于功课，没能去看你。'},
+                {speaker:'旁白', text:'他说着，弯下腰摸了摸你的额头。你几乎要忍不住发抖——前世，这双手也曾在你死后扶棺痛哭。'},
+                {speaker:'李辰安', text:'多谢大哥记挂。已经好了。'},
+                {speaker:'李承昭', text:'三哥倒是命大，太液池那么深都淹不死。'},
+                {speaker:'李承恪', text:'七弟年纪小，口无遮拦，三弟莫与他计较。'},
+                {speaker:'旁白', text:'兄弟三人各怀心思。李承恪望着你离去的方向，低声道："五岁孩童，能说出\'关乎江山社稷\'这样的话……倒是我从前小瞧了这位三弟。"他身后的阴影里，一个声音道："殿下，陛下昨夜召见了谢道玄。"李承恪眼神一沉："天机阁……看来不能再等了。"'},
+            ],
+            nextChapter:'chapter1', nextStep:'xiedaoxuan_arrives'
+        }
+    },
+
+    // 第一章
+    'chapter1': {
+        'xiedaoxuan_arrives': {
+            time:'大庆二十三年·春·三日后',
+            location:'大明宫·御书房',
+            narration:'三日后，天机阁阁主谢道玄入宫。他须发皆白，目光却清亮如少年。他打量了你半晌，忽然问了一个问题。\n\n这个问题将决定你这一世走什么样的路。',
+            dialogs:[
+                {speaker:'谢道玄', text:'三殿下以为，何为帝王？'},
+                {speaker:'旁白', text:'你沉默片刻，脑海中闪过前世种种。现在，这个老人正看着你，你必须回答。'},
+            ],
+            choices:[
+                {
+                    text:'「帝王当以社稷为重，无私无我。」',
+                    hint:'仁德之路·以圣贤之道立身',
+                    feedback:'📿 你选择了仁德之路。',
+                    effects:[{type:'flag',key:'path',value:'仁者之路'},{type:'attribute',key:'仁德',value:3}],
+                    nextChapter:'chapter2_r1', nextStep:'five_years_later'
+                },
+                {
+                    text:'「帝王当以权术驭天下，恩威并施。」',
+                    hint:'权谋之路·以帝王心术制胜',
+                    feedback:'⚔️ 你选择了权谋之路。',
+                    effects:[{type:'flag',key:'path',value:'权谋之路'},{type:'attribute',key:'权谋',value:3}],
+                    nextChapter:'chapter2_r2', nextStep:'poison_plot'
+                },
+                {
+                    text:'「我不知道什么叫帝王。我只知道，若有人要害我和我珍视之人，我必百倍偿还。」',
+                    hint:'赤诚之路·以真心直面人心',
+                    feedback:'🔥 你选择了赤诚之路。',
+                    effects:[{type:'flag',key:'path',value:'赤诚之路'},{type:'attribute',key:'隐忍',value:3}],
+                    nextChapter:'chapter2_r3', nextStep:'midautumn_banquet'
+                }
+            ]
+        }
+    },
+
+    // 仁者之路
+    'chapter2_r1': {
+        'five_years_later': {
+            time:'五年后·十岁生辰',
+            location:'上林苑猎场',
+            narration:'你成了朝野交口称赞的"贤王"。今日十岁生辰，父皇在上林苑举办小猎。大哥李承恪送来一匹西域宝马"照夜玉狮子"。',
+            dialogs:[
+                {speaker:'李承恪', text:'三弟，这是大哥特地从西域商人手里买下的，日行千里，性情温顺，最配你的仁厚。'},
+                {speaker:'旁白', text:'你翻身上马。最初一切安好。但当仪仗行至猎场深处，一声尖锐哨响刺破长空——'},
+                {speaker:'苏晚晴', text:'辰安哥哥！跳！'},
+                {speaker:'旁白', text:'照夜玉狮子猛然发狂！苏晚晴不顾一切冲到你面前，用自己的身体为你争取了一瞬。你扑向草丛，她却跌倒在地，鲜血染红了额发。\n\n事后追查，所有线索都指向一名马夫"醉酒误事"。但你知道这不是意外。'},
+            ],
+            choices:[
+                {text:'南下江南，以治水为名积蓄力量', hint:'暂时远离京城漩涡', feedback:'🚣 你请旨南下治水。', effects:[{type:'flag',key:'went_jiangnan',value:true}], nextChapter:'chapter2_r1', nextStep:'jiangnan_secret'},
+                {text:'留在京城，以仁德之名争取朝臣支持', hint:'在权力中心以柔克刚', feedback:'🏛️ 你留在京城。', effects:[{type:'flag',key:'stayed_capital',value:true}], nextChapter:'chapter2_r1', nextStep:'capital_struggle'},
+                {text:'暗中调查惊马事件的真相', hint:'你怀疑这不是意外', feedback:'🔍 你开始秘密调查。', effects:[{type:'flag',key:'investigated',value:true}], nextChapter:'chapter2_r1', nextStep:'investigation'}
+            ]
+        },
+        'jiangnan_secret': {
+            time:'三年后·十三岁',
+            location:'江南·扬州府',
+            narration:'你在江南治水三年，遇到了前朝户部侍郎沈鹤龄。他告诉你一个惊天秘密：二十年前被废的太子李宏远并没有死，他创建了秘密组织"天枢"。前世你被杀，正是天枢在幕后挑拨。\n\n而天机阁主谢道玄，正是李宏远的亲弟弟。',
+            dialogs:[
+                {speaker:'沈鹤龄', text:'殿下，老臣怀疑李宏远根本没有死。这二十年来，他一直在等一个机会。而殿下你——很可能是他计划中的下一个目标。'},
+            ],
+            choices:[
+                {text:'亲赴西湖旧宅，查明真相', hint:'不入虎穴焉得虎子', feedback:'🏯 你在西湖旧宅中见到了李宏远本人。', nextChapter:'finale', nextStep:'true_ending_r1a'},
+                {text:'回京向谢道玄摊牌', hint:'直接质问你的师父', feedback:'⚡ 师徒之间将有一场决定命运的对话。', nextChapter:'finale', nextStep:'ending_r1b_mercy'},
+                {text:'先按兵不动，继续观察', hint:'谨慎行事', feedback:'🤫 你装作什么都不知道。', nextChapter:'finale', nextStep:'ending_r1c_reckoning'}
+            ]
+        },
+        'capital_struggle': {
+            time:'两年后·十二岁',
+            location:'京城·安王府',
+            narration:'你留在京城，以贤王之名广交朝臣。这天你收到皇后密信——"小心萧氏"。你开始调查萧家，发现萧家背后竟与天枢有着千丝万缕的联系。',
+            dialogs:[
+                {speaker:'皇后', text:'辰安，萧家背后是太子。我不能让大周的江山断送在我自己的儿子手里。等你当了皇帝——留他一条命。'},
+            ],
+            choices:[
+                {text:'联合皇后势力，逼太子退位', feedback:'👑 在皇后帮助下，太子被废。', nextChapter:'finale', nextStep:'ending_r1d_forgive'},
+                {text:'先除后患，秘密解决七皇子', feedback:'🗡️ 你派人暗杀李承昭。', nextChapter:'finale', nextStep:'bad_ending_r1e'},
+                {text:'暂缓行动，先查清"天枢"真相', feedback:'♟️ 你发现了天枢的存在。', nextChapter:'finale', nextStep:'ending_r1f_victory'}
+            ]
+        },
+        'investigation': {
+            time:'数月后',
+            location:'京城',
+            narration:'你暗中调查惊马事件，发现那名马夫是被太子府的人收买。更让你心惊的是——收买马夫的人，与天机阁有着隐秘的联系。你的师父谢道玄，似乎并不像表面那么简单。',
+            choices:[
+                {text:'跟踪谢道玄，揭开他的真面目', feedback:'👁️ 你跟踪谢道玄到了京郊旧宅。', nextChapter:'finale', nextStep:'ending_r1g_confront'},
+                {text:'直接质问谢道玄', feedback:'💬 师徒对话将改变一切。', nextChapter:'finale', nextStep:'ending_r1b_mercy'}
+            ]
+        }
+    },
+
+    // 权谋之路
+    'chapter2_r2': {
+        'poison_plot': {
+            time:'七岁那年深秋',
+            location:'寝宫偏殿',
+            narration:'谢道玄倾囊相授，你的锋芒毕露却成了众矢之的。你发现每日饮用的安神汤中被下了慢性毒药。你顺藤摸瓜，锁定了贴身太监小德子。',
+            dialogs:[
+                {speaker:'李辰安', text:'大哥许了你什么？你家乡老母的养老送终？还是你弟弟的锦绣前程？'},
+                {speaker:'小德子', text:'奴才……奴才对不起七殿下！'},
+                {speaker:'旁白', text:'小德子咬碎毒囊自尽。临死前攀咬七弟——但你心里清楚，真正的幕后之人，是那个从头到尾干干净净的大哥。'},
+            ],
+            choices:[
+                {text:'将计就计，假意与七皇子结盟', feedback:'🤝 你与李承昭结成秘密联盟。', nextChapter:'chapter2_r2', nextStep:'alliance_seven'},
+                {text:'设局反击，直接扳倒太子', feedback:'⚔️ 高风险，高回报。', nextChapter:'chapter2_r2', nextStep:'counter_crown_prince'}
+            ]
+        },
+        'alliance_seven': {
+            time:'数月后',
+            location:'雍王府',
+            narration:'你与七皇子李承昭结成秘密联盟。他母妃萧氏死于冷宫大火，你让他相信是太子所为。这把刀已经磨好了。',
+            choices:[
+                {text:'趁太子出宫，秘密搜查东宫', feedback:'🏃 你夜探东宫，发现了惊天秘密...', nextChapter:'finale', nextStep:'ending_r2a_brothers'},
+                {text:'让七皇子去试探太子', feedback:'🐅 坐山观虎斗。', nextChapter:'finale', nextStep:'ending_r2b_regret'}
+            ]
+        },
+        'counter_crown_prince': {
+            time:'十二岁那年',
+            location:'东宫',
+            narration:'你决定主动出击。趁太子前往大觉寺斋戒，你带人秘密搜查东宫，找到了太子与李宏远往来的密信。但这是一个陷阱。禁军将东宫团团围住。',
+            choices:[
+                {text:'拼死突围，将证据呈给父皇', feedback:'⚡ 你成功突围。', nextChapter:'finale', nextStep:'ending_r2a_brothers'}
+            ]
+        }
+    },
+
+    // 赤诚之路
+    'chapter2_r3': {
+        'midautumn_banquet': {
+            time:'八岁那年中秋',
+            location:'大明宫·紫宸殿',
+            narration:'一年后的中秋宫宴上，大哥李承恪当众提议由你作诗。你知道他在捧杀你。满殿目光汇聚在你身上。苏晚晴在桌下握住了你的手。',
+            dialogs:[
+                {speaker:'李承恪', text:'三弟年幼才高，何不趁此良辰，让我等开开眼界？'},
+            ],
+            choices:[
+                {text:'作一首中规中矩的诗', hint:'「金镜悬玉京，清辉满大明。」', feedback:'📜 中庸保身。', effects:[{type:'flag',key:'poem',value:'moderate'}], nextChapter:'chapter2_r3', nextStep:'moderate_path'},
+                {text:'作一首惊才绝艳的诗', hint:'「少时不识月，呼作白玉盘。」', feedback:'🌟 诗惊四座！', effects:[{type:'flag',key:'poem',value:'brilliant'}], nextChapter:'chapter2_r3', nextStep:'brilliant_path'},
+                {text:'装作紧张，作一首拙劣的诗', hint:'「月亮圆又圆，像我家的大圆盘。」', feedback:'🤡 藏拙自污。', effects:[{type:'flag',key:'poem',value:'foolish'}], nextChapter:'chapter2_r3', nextStep:'foolish_path'}
+            ]
+        },
+        'moderate_path': {
+            time:'十年后·十八岁',
+            location:'雁门关',
+            narration:'你以"资质平庸"的面目活过了少年时代。雁门关之役你一战成名，却功高震主被贬江南。在江南你遇到了沈鹤龄，得知了天枢的秘密。如今父皇病重，太子监国。你带着证据星夜回京。',
+            choices:[
+                {text:'直接入宫面圣，将所有证据呈给父皇', feedback:'👑 平稳过渡。', nextChapter:'finale', nextStep:'ending_r3a_accept'},
+                {text:'先与太子谈判，尝试和平交接', feedback:'🤝 太子提出了一个条件...', nextChapter:'finale', nextStep:'ending_r3b_promise'},
+                {text:'秘密联络军中旧部，准备武力夺位', feedback:'⚔️ 政变正在酝酿...', nextChapter:'finale', nextStep:'ending_r3c_lake'}
+            ]
+        },
+        'brilliant_path': {
+            time:'十二岁·皇庄',
+            location:'京郊皇庄',
+            narration:'你的锋芒毕露让你迅速崛起。十二岁那年，七皇子李承昭带兵围攻你的皇庄。你以寡敌众，计破千军。但李承昭被灭口，太子全身而退。',
+            choices:[
+                {text:'继续追查天枢余党，不放过任何一个', feedback:'🗡️ 大清洗开始。', nextChapter:'finale', nextStep:'bad_ending_r3d'},
+                {text:'宣布大赦天下，与过去和解', feedback:'🕊️ 开创盛世。', nextChapter:'finale', nextStep:'good_ending_r3e'},
+                {text:'只追究首恶，其余从者不究', feedback:'⚖️ 恩威并重。', nextChapter:'finale', nextStep:'ending_r3f_letter'}
+            ]
+        },
+        'foolish_path': {
+            time:'十年后·二十岁',
+            location:'雁门关',
+            narration:'你藏拙二十年。雁门关一役你一战封神，携不世军功回京。太子跪在城门前哭嚎"父皇驾崩"。你没有入宫。一个老太监塞给你一张纸条——谢道玄约你在京郊旧宅见面。',
+            choices:[
+                {text:'带兵包围旧宅，揭开所有真相', feedback:'🏯 一切真相大白。', nextChapter:'finale', nextStep:'ending_r3g_accept'},
+                {text:'接受命运，用剩余时间做一个好皇帝', feedback:'😢 你登基后发现自己寿数有限。', nextChapter:'finale', nextStep:'ending_r3h_peace'},
+                {text:'寻找破解之法，哪怕代价巨大', feedback:'🔮 踏上寻找古籍的旅程。', nextChapter:'finale', nextStep:'ending_r3i_journey'}
+            ]
+        }
+    },
+
+    // 结局库
+    'finale': {
+        'true_ending_r1a': {
+            time:'永昌元年', location:'大明宫',
+            narration:'你与李宏远联手击败了谢道玄。但李宏远告诉你——你的父皇，用他自己的命，换了你的重生。你跪在父皇灵前，痛哭失声。后来你登基称帝，开创了盛世。每年中秋，你都会去太庙，在父皇画像前放一碟桂花糕。',
+            dialogs:[{speaker:'旁白', text:'【守拙者·真相之后】结局达成。你父皇用命换来的第二次机会，你没有浪费。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r1b_mercy': {
+            time:'永昌元年', location:'天机阁',
+            narration:'谢道玄饮下毒酒，李宏远在西湖旧宅中度过余生。你登上皇位，将这段往事深埋心底。每年谢道玄的忌日，你都会独自去他的墓前坐一会儿。',
+            dialogs:[{speaker:'旁白', text:'【师与徒】结局达成。师徒恩怨，最终化作一杯毒酒和一座孤坟。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r1c_reckoning': {
+            time:'永昌元年', location:'宣政殿',
+            narration:'你清算所有曾参与天枢的人。但谢道玄在事情败露前主动辞官归隐，留书一封："我走后，天枢自散。保重。"你再也找不到他。',
+            dialogs:[{speaker:'旁白', text:'【消失的棋手】结局达成。有些答案，永远也找不到。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r1d_forgive': {
+            time:'永昌元年', location:'坤宁宫',
+            narration:'在皇后帮助下，太子被废。皇后郁郁而终，临终前她告诉你一个秘密——前世太子杀你，她知情却未阻止。她帮你，是因为愧疚。你以太后之礼安葬她。',
+            dialogs:[{speaker:'旁白', text:'【皇后的救赎】结局达成。她用余生赎罪，你用宽容回应。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'bad_ending_r1e': {
+            time:'多年后', location:'边疆',
+            narration:'你被削爵流放。多年后，你在边关听到了新帝登基的消息。新帝是你的大哥李承恪。他大赦天下，唯独没有赦免你。你老死在边疆，至死没能再回京城。',
+            dialogs:[{speaker:'旁白', text:'【功亏一篑】坏结局。一步踏错，满盘皆输。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r1f_victory': {
+            time:'永昌元年', location:'金銮殿',
+            narration:'你利用天枢内部的矛盾，让李宏远和谢道玄自相残杀，最后坐收渔利。所有棋子都已落下。你是最后的赢家。',
+            dialogs:[{speaker:'旁白', text:'【弈者无敌】结局达成。你不是棋子，你是棋手。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r1g_confront': {
+            time:'永昌元年', location:'京郊旧宅',
+            narration:'你推开门，与谢道玄、李宏远面对面。真相终于大白。你终于理解了这盘棋的全貌。',
+            dialogs:[{speaker:'旁白', text:'【真相】结局达成。真相或许残酷，但胜过一生猜疑。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r2a_brothers': {
+            time:'永昌元年', location:'东宫',
+            narration:'你与太子联手对抗天枢。在一场惊天博弈中，太子为了保护你而死。他临死前说："三弟，我欠你的，还清了。"你登基后，追封他为"义皇帝"。',
+            dialogs:[{speaker:'旁白', text:'【兄弟】结局达成。前世的仇人，今生的兄弟。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r2b_regret': {
+            time:'多年后', location:'御书房',
+            narration:'多年后你发现，太子并非你想象的那样。他一直在暗中保护你。你废掉他，恰恰中了天枢的下怀。这份悔恨将伴你余生。',
+            dialogs:[{speaker:'旁白', text:'【悔恨】结局达成。你以为的敌人，也许是你最大的保护者。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3a_accept': {
+            time:'永昌十五年末', location:'养心殿',
+            narration:'你用十五年创造了一个盛世。死时万民痛哭，史书称你为"千古一帝"。苏晚晴握着你的手，陪你走完最后一程。"这一世，我不后悔。"你说。',
+            dialogs:[{speaker:'旁白', text:'【十五年盛世】结局达成。用短暂的生命，活成永恒。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3b_promise': {
+            time:'多年后', location:'南方',
+            narration:'你信守诺言。太子去了南方，再也没有回来。多年后有人告诉你，他在南方种了一片桂花林。每年中秋，他都会在树下独自喝酒。',
+            dialogs:[{speaker:'旁白', text:'【太子的条件】结局达成。他用自己的退位，换了很多人的平安。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3c_lake': {
+            time:'多年后', location:'西湖边',
+            narration:'你微服私访，在西湖边遇到一个钓鱼的老人，眉眼间依稀是大哥的模样。你们没有说话，在湖边坐了一个下午。夕阳西下时，你起身离开。身后传来他的声音："三弟，保重。"',
+            dialogs:[{speaker:'旁白', text:'【湖边的背影】结局达成。有些恩怨，不需要说破。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'bad_ending_r3d': {
+            time:'永昌十年', location:'冷宫',
+            narration:'你开始大清洗，株连太多，朝野震动。苏晚晴在劝你收手无果后，离开了皇宫。你坐在空荡荡的大殿里，成了真正的孤家寡人。',
+            dialogs:[{speaker:'旁白', text:'【孤家寡人】坏结局。复仇的火焰，最终吞噬了你自己。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'good_ending_r3e': {
+            time:'永昌二十年', location:'御花园',
+            narration:'你放下仇恨，大赦天下。你开创了盛世。苏晚晴陪在你身边，看着你从复仇者变成了明君。"晚晴，"你说，"谢谢你没有放弃我。"她笑了。"从六岁起，我就没打算放弃你。"',
+            dialogs:[{speaker:'旁白', text:'【盛世的代价】结局达成。放下仇恨，才能拥抱更大的天地。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3f_letter': {
+            time:'多年后', location:'御书房',
+            narration:'谢道玄在被幽禁期间给你写了一封长信，详细记录了天枢二十年来的所有秘密。多年后你翻开泛黄的信纸，信的最后写着："陛下，老臣去了。天机阁的桃花开了，可惜你看不到。"',
+            dialogs:[{speaker:'旁白', text:'【师父的最后一课】结局达成。他走了，但他的话还在。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3g_accept': {
+            time:'永昌十五年末', location:'养心殿',
+            narration:'你不再追问。你用余生好好治理天下，好好爱她。十五年，你只有十五年。但你用这十五年创造了奇迹。死前你握着苏晚晴的手说："够了。这一世，够了。"',
+            dialogs:[{speaker:'旁白', text:'【知足】结局达成。十五年的生命，活出了百年精彩。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3h_peace': {
+            time:'永昌十五年末', location:'养心殿',
+            narration:'你闭上眼睛。窗外下起了雪，像那年中秋的月光。苏晚晴握着你的手，眼泪滴在你的手背上。你走了，但你的盛世留了下来。',
+            dialogs:[{speaker:'旁白', text:'【十五年盛世】结局达成。短暂而璀璨，像一颗流星。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        },
+        'ending_r3i_journey': {
+            time:'多年后', location:'西域大漠',
+            narration:'你踏上了寻找古籍完整版本的旅程。使臣们走遍了西域、吐蕃、南诏。你还没有找到答案，但大周的旗帜飘扬在更远的地方。故事还没有结束。',
+            dialogs:[{speaker:'旁白', text:'【未竟的旅程】开放结局。前路漫漫，但你已经准备好了。'}],
+            choices:[{text:'重新开始', nextChapter:'prologue', nextStep:'start'}]
+        }
+    }
+};
+
+// ==================== 启动游戏 ====================
+let game;
+window.addEventListener('DOMContentLoaded', () => {
+    game = new Game();
+    window.game = game;
+});
+
+function restartGame() { if(game) game.restartGame(); }
+function saveGame() { if(game) game.saveGame(); }
+</script>
+</body>
+</html>
